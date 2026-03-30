@@ -4,24 +4,26 @@
 #define MAX_TERMS 100
 
 typedef struct {
-    int exp;
-    float coef;
+    int exp; // 지수
+    float coef; // 계수
 } Term;
 
 typedef struct {
-    int nTerms;
-    Term term[MAX_TERMS];
+    int nTerms; // 다항식의 항의 개수
+    Term term[MAX_TERMS]; // 다항식의 항들을 저장하는 배열
 } SparsePoly;
 
+// 다항식에 x값 대입
 float evaluate(SparsePoly a, float x) {
     float result = 0.f;
 
     for (int i = 0; i < a.nTerms; i++) {
-        result += (float)(a.term[i].coef * pow(x, a.term[i].exp));
+        result += (float)(a.term[i].coef * pow(x, a.term[i].exp)); // 계수 * x^지수
     }
     return result;
 }
 
+// 다항식 덧셈
 SparsePoly add(SparsePoly a, SparsePoly b) {
     SparsePoly c;
 
@@ -42,6 +44,7 @@ SparsePoly add(SparsePoly a, SparsePoly b) {
     return c;
 }
 
+// 다항식 출력
 void print_spoly(SparsePoly p, char str[]) {
     printf("%s = ", str);
 
