@@ -1,0 +1,318 @@
+========================================
+ 날짜: 2026-03-27
+ 주제: 배열/구조체 응용 (행렬, 다항식, 희소 표현)
+========================================
+
+▣ 학습 개요
+  포인터 학습을 마치고, 실제 자료구조의 첫 단계로 배열과 구조체를
+  활용한 다양한 데이터 표현 방식을 학습.
+  밀집 표현 vs 희소 표현의 차이를 다항식/행렬로 비교하는 것이 핵심.
+
+----------------------------------------
+▣ 파일별 핵심 개념
+----------------------------------------
+
+[array1.c] - 자료형 크기와 배열
+  · sizeof(타입): 타입의 바이트 크기를 반환.
+    - char: 1byte, int: 4bytes, float: 4bytes, double: 8bytes
+  · 배열 원소 개수: sizeof(arr) / sizeof(arr[0])
+  · 핵심: 메모리 관점에서 데이터를 이해하는 기초.
+
+[array.c] - 배열의 함수 전달 특성
+  · reset_variable(int x):        값 복사 -> 원본 변경 불가.
+  · reset_variable_reference(int *x): 포인터 전달 -> 원본 변경 가능.
+  · reset_array(int a[], int len): 배열은 자동으로 포인터 전달 -> 원본 변경됨.
+  · 핵심: 배열은 Call by Reference처럼 동작 (배열 이름 = 주소).
+
+[struct.c] - 구조체의 값 전달 vs 포인터 전달
+  · 복소수(Complex) 구조체로 실험.
+  · reset_complex(Complex a):      구조체 복사본 전달 -> 원본 그대로.
+  · reset_complex_ref(Complex *a): 포인터 전달 -> 원본 변경됨.
+  · 핵심: 구조체는 기본적으로 값이 복사됨. 원본 수정은 포인터 필요.
+
+[subject.c] - 복소수 연산 구현
+  · Complex 구조체로 사칙연산 및 켤레 복소수 구현.
+  · 복소수 덧셈: (a+bi) + (c+di) = (a+c) + (b+d)i
+  · 복소수 곱셈: (a+bi)(c+di) = (ac-bd) + (ad+bc)i
+  · 켤레 복소수: (a+bi)* = a - bi
+  · 핵심: 구조체를 활용한 추상 데이터 타입(ADT) 구현의 첫 예제.
+
+[mat.c] - 2차원 배열과 행렬 전치
+  · 2차원 배열: int mat[ROWS][COLS]
+  · 행렬 전치(Transpose): mat[i][j] <-> mat[j][i]
+  · 대각선(i == j) 기준으로 한쪽만 swap (i < j 조건으로 중복 방지).
+  · 핵심: 2차원 배열 = 행렬 데이터의 자연스러운 표현 방식.
+
+[pol.c] - 밀집 다항식 표현 (Dense Polynomial)
+  · 구조: Polynomial { int degree; float coef[MAX_DEGREE]; }
+  · coef[i] = x^i 의 계수. 예) coef[0]=상수항, coef[1]=x^1 계수.
+  · 장점: 구현이 단순, 인덱스로 바로 접근.
+  · 단점: 최고차항이 크면 대부분이 0인 원소로 낭비 (ex: x^1000 + 1).
+  · evaluate(): 호너의 방법 변형으로 다항식에 x값 대입.
+  · add(): 두 다항식의 계수를 항별로 덧셈.
+
+[sparse.c] - 희소 행렬 (Sparse Matrix)
+  · 행렬의 대부분 원소가 0일 때, 0이 아닌 원소만 저장.
+  · Elem { int row; int col; int value; } 형태로 비0 원소만 기록.
+  · 전치: row와 col을 서로 교환하면 됨.
+  · 장점: 메모리 절약.
+  · 단점: 원소 검색/접근이 순차 탐색이므로 느릴 수 있음.
+
+[sparse_po.c] - 희소 다항식 (Sparse Polynomial)
+  · Term { int exp; float coef; } 형태로 비0 항만 저장.
+  · SparsePoly { int nTerms; Term term[MAX_TERMS]; }
+  · 예) 10x^100 + 6 은 Term 2개만 사용 (밀집이면 101개 필요).
+  · add(): 두 다항식의 항을 지수(exp) 크기 순으로 병합 (merge).
+    - a의 exp < b의 exp: b의 항 추가
+    - a의 exp > b의 exp: a의 항 추가
+    - a의 exp == b의 exp: 계수 합산
+
+----------------------------------------
+▣ 밀집 표현 vs 희소 표현 비교
+----------------------------------------
+
+                  밀집(Dense)        희소(Sparse)
+  메모리 사용     항상 고정 크기      비0 원소 수에 비례
+  접근 속도       O(1) 인덱스 접근    O(n) 순차 탐색
+  적합한 경우     0이 거의 없을 때    0이 대부분일 때
+  구현 복잡도     단순               비교적 복잡
+
+----------------------------------------
+▣ 학습 흐름 정리
+----------------------------------------
+
+  자료형 크기 이해 (sizeof)
+       |
+  배열/구조체의 함수 전달 특성 재확인
+       |
+  구조체로 ADT 구현 (복소수 연산)
+       |
+  2차원 배열 = 행렬 표현 (전치 연산)
+       |
+  밀집 다항식 (배열로 모든 계수 저장)
+       |
+  희소 행렬/다항식 (비0 원소만 저장 -> 메모리 효율)
+
+----------------------------------------
+▣ 핵심 정리
+----------------------------------------
+  1. sizeof(arr) / sizeof(arr[0]) = 배열 원소 개수 공식
+  2. 구조체는 함수에 넘기면 복사됨 (원본 수정은 포인터 필요)
+  3. 밀집 표현: 단순하지만 0이 많으면 메모리 낭비
+  4. 희소 표현: 비0 원소만 저장 -> 대용량 데이터에 효율적
+  5. 행렬 전치: mat[i][j] <-> mat[j][i], i < j 조건으로 한 번만 swap
+  6. 희소 다항식 덧셈: 지수를 기준으로 두 배열을 merge하는 알고리즘
+
+========================================
+▣ 구조체 상세
+========================================
+
+  ▶ Complex  (struct.c, subject.c)
+  ┌─────────────────────────────────────
+  │ typedef struct {
+  │     double real;   // 실수부
+  │     double imag;   // 허수부
+  │ } Complex;
+  └─────────────────────────────────────
+    · 복소수 a+bi 를 (real=a, imag=b)로 표현.
+    · 구조체 값 전달 vs 포인터 전달 비교 및 복소수 연산 ADT에 사용.
+
+  ▶ Polynomial  (pol.c) — 밀집 다항식
+  ┌─────────────────────────────────────
+  │ typedef struct {
+  │     int   degree;              // 최고 차수
+  │     float coef[MAX_DEGREE];    // coef[i] = x^i 의 계수
+  │ } Polynomial;
+  └─────────────────────────────────────
+    · MAX_DEGREE = 1001로 최대 1000차 다항식 표현 가능.
+    · coef[0] = 상수항, coef[1] = x^1 계수, ...
+    · 단점: 10x^1000 + 5 를 표현해도 coef 배열 1001개 전부 할당됨.
+
+  ▶ Elem  (sparse.c) — 희소 행렬 원소
+  ┌─────────────────────────────────────
+  │ typedef struct {
+  │     int row;    // 행 번호
+  │     int col;    // 열 번호
+  │     int value;  // 해당 위치의 값 (0이 아닌 것만 저장)
+  │ } Elem;
+  └─────────────────────────────────────
+    · 0이 아닌 원소만 (행, 열, 값) 트리플로 저장.
+    · 전치 시 row와 col만 교환 (value는 그대로).
+
+  ▶ Term  (sparse_po.c) — 희소 다항식의 항 하나
+  ┌─────────────────────────────────────
+  │ typedef struct {
+  │     int   exp;    // 지수 (x^exp)
+  │     float coef;   // 계수
+  │ } Term;
+  └─────────────────────────────────────
+
+  ▶ SparsePoly  (sparse_po.c) — 희소 다항식
+  ┌─────────────────────────────────────
+  │ typedef struct {
+  │     int  nTerms;              // 항의 개수 (0이 아닌 것만)
+  │     Term term[MAX_TERMS];     // 항 배열 (지수 내림차순 저장)
+  │ } SparsePoly;
+  └─────────────────────────────────────
+    · term 배열은 지수 내림차순으로 정렬되어 있어야 add()가 동작.
+    · 예) 10x^100 + 6 -> nTerms=2, term={{100,10.0},{0,6.0}}
+
+========================================
+▣ 함수 상세
+========================================
+
+  ▶ reset_complex / reset_complex_ref  [struct.c]
+    - reset_complex(Complex a):
+        매개변수를 값으로 받음 -> 복사본의 real/imag를 0으로 변경.
+        원본 구조체는 변하지 않음.
+    - reset_complex_ref(Complex *a):
+        포인터로 받음 -> a->real = 0.0; a->imag = 0.0;
+        원본 구조체가 변경됨.
+
+  ▶ plus / minus / multi / conjugate  [subject.c]
+    - 모두 시그니처: Complex 함수명(Complex a, Complex b)
+    - 두 Complex를 값으로 받아 새 Complex를 반환 (원본 불변).
+    - plus:      c.real = a.real+b.real,  c.imag = a.imag+b.imag
+    - minus:     c.real = a.real-b.real,  c.imag = a.imag-b.imag
+    - multi:     c.real = a.real*b.real - a.imag*b.imag
+                 c.imag = a.real*b.imag + a.imag*b.real
+    - conjugate: c.real = a.real,  c.imag = -a.imag  (허수부 부호 반전)
+
+  ▶ print_mat / transpose_mat  [mat.c]
+    - print_mat(int m[ROWS][COLS], char *str):
+        str 제목 출력 후 2중 for문으로 행렬 출력.
+        %3d 로 3자리 고정폭 출력해 정렬 유지.
+    - transpose_mat(int m[ROWS][COLS]):
+        for i: for j=i+1: swap(m[i][j], m[j][i])
+        i < j 조건: 대각선 위쪽만 swap -> 아래쪽까지 가면 원복됨.
+
+  ▶ evaluate  [pol.c]
+    - 시그니처: float evaluate(Polynomial p, float x)
+    - 동작:
+        result = coef[0]  (상수항)
+        mul = 1
+        for i=1..degree: mul *= x; result += coef[i] * mul
+        x^1=x, x^2=x*x, ... 을 누적 곱으로 계산.
+    - 반환값: p(x) 값
+
+  ▶ add  [pol.c] — 밀집 다항식 덧셈
+    - 시그니처: Polynomial add(Polynomial a, Polynomial b)
+    - 동작: 최고 차수 = max(a.degree, b.degree)
+            coef[i] = a.coef[i] + b.coef[i] (범위 초과 시 0으로 처리)
+    - 반환값: 새 Polynomial 구조체
+
+  ▶ transpose_mat2  [sparse.c] — 희소 행렬 전치
+    - 시그니처: void transpose_mat2(Elem m[], int len)
+    - 동작: 모든 원소에 대해 row와 col을 swap.
+    - 주의: 정렬 순서가 깨질 수 있음 (행 기준 정렬이 필요한 경우).
+
+  ▶ add  [sparse_po.c] — 희소 다항식 덧셈
+    - 시그니처: SparsePoly add(SparsePoly a, SparsePoly b)
+    - 동작: i(a의 인덱스), j(b의 인덱스) 두 포인터를 동시에 전진.
+        a.term[i].exp < b.term[j].exp  -> b의 항 그대로 추가, j++
+        a.term[i].exp > b.term[j].exp  -> a의 항 그대로 추가, i++
+        a.term[i].exp == b.term[j].exp -> 계수 합산 후 추가, i++, j++
+    - 이 패턴은 "두 정렬된 배열 병합(merge)" 알고리즘과 동일.
+    - 반환값: 새 SparsePoly 구조체
+
+========================================
+▣ 의사코드 (Pseudocode)
+========================================
+
+  ▶ transpose_mat(m) — 행렬 전치
+  ┌─────────────────────────────────────
+  │ PROCEDURE transpose_mat(m: 2D 배열)
+  │   FOR i ← 0 TO ROWS-1 DO
+  │     FOR j ← i+1 TO COLS-1 DO   // i+1 부터: 대각선 위쪽만
+  │       temp    ← m[i][j]
+  │       m[i][j] ← m[j][i]
+  │       m[j][i] ← temp
+  │     END FOR
+  │   END FOR
+  │ END
+  └─────────────────────────────────────
+    · j를 0부터 시작하면 동일 쌍을 두 번 swap → 원복됨.
+    · j ← i+1 로 대각선 위쪽 삼각형만 처리.
+    · 예)  [0][1]↔[1][0],  [0][2]↔[2][0],  [1][2]↔[2][1]
+
+  ▶ evaluate(p, x) — 다항식에 x 대입 (밀집)
+  ┌─────────────────────────────────────
+  │ FUNCTION evaluate(p: Polynomial, x: float) → float
+  │   result ← p.coef[0]    // 상수항
+  │   mul    ← 1
+  │   FOR i ← 1 TO p.degree DO
+  │     mul    ← mul × x           // x^i 누적 계산
+  │     result ← result + p.coef[i] × mul
+  │   END FOR
+  │   RETURN result
+  │ END
+  └─────────────────────────────────────
+    · 매 항마다 pow(x, i)를 새로 계산하지 않고 이전 mul에 x를 곱함.
+    · 곱셈 횟수: n번 (degree만큼).  pow 사용 시보다 효율적.
+
+  ▶ add(a, b) — 밀집 다항식 덧셈
+  ┌─────────────────────────────────────
+  │ FUNCTION add(a, b: Polynomial) → Polynomial
+  │   p.degree ← max(a.degree, b.degree)
+  │   FOR i ← 0 TO p.degree DO
+  │     ca ← (i ≤ a.degree) ? a.coef[i] : 0
+  │     cb ← (i ≤ b.degree) ? b.coef[i] : 0
+  │     p.coef[i] ← ca + cb
+  │   END FOR
+  │   RETURN p
+  │ END
+  └─────────────────────────────────────
+    · 범위 밖 항의 계수는 0으로 처리.
+
+  ▶ add(a, b) — 희소 다항식 덧셈 (merge 알고리즘)
+  ┌─────────────────────────────────────
+  │ FUNCTION add(a, b: SparsePoly) → SparsePoly
+  │   c.nTerms ← 0
+  │   i ← 0,  j ← 0
+  │
+  │   WHILE i < a.nTerms OR j < b.nTerms DO
+  │
+  │     IF i = a.nTerms OR a.term[i].exp < b.term[j].exp THEN
+  │       c.term[c.nTerms++] ← b.term[j++]   // b의 항 추가
+  │
+  │     ELSE IF j = b.nTerms OR a.term[i].exp > b.term[j].exp THEN
+  │       c.term[c.nTerms++] ← a.term[i++]   // a의 항 추가
+  │
+  │     ELSE  // 지수가 같음
+  │       c.term[c.nTerms]       ← a.term[i++]
+  │       c.term[c.nTerms++].coef ← c.term[c.nTerms-1].coef + b.term[j++].coef
+  │     END IF
+  │
+  │   END WHILE
+  │   RETURN c
+  │ END
+  └─────────────────────────────────────
+    · 두 배열을 동시에 앞에서부터 읽는 "두 포인터(Two Pointer)" 기법.
+    · 지수가 작은 쪽을 먼저 결과에 넣고 해당 인덱스만 전진.
+    · 지수가 같으면 계수를 합산하고 양쪽 인덱스 모두 전진.
+    · 한쪽이 먼저 끝나면 나머지 한 쪽의 항을 그대로 복사.
+
+  ▶ transpose_mat2(m, len) — 희소 행렬 전치
+  ┌─────────────────────────────────────
+  │ PROCEDURE transpose_mat2(m: Elem 배열, len: int)
+  │   FOR i ← 0 TO len-1 DO
+  │     temp     ← m[i].row
+  │     m[i].row ← m[i].col
+  │     m[i].col ← temp
+  │   END FOR
+  │ END
+  └─────────────────────────────────────
+
+  ▶ 복소수 곱셈 원리 확인 (multi)
+  ┌─────────────────────────────────────
+  │ (a + bi)(c + di)
+  │   = ac + adi + bci + bdi²
+  │   = ac + adi + bci + bd(-1)    // i² = -1
+  │   = (ac - bd) + (ad + bc)i
+  │
+  │ FUNCTION multi(a, b: Complex) → Complex
+  │   c.real ← a.real × b.real - a.imag × b.imag
+  │   c.imag ← a.real × b.imag + a.imag × b.real
+  │   RETURN c
+  │ END
+  └─────────────────────────────────────
